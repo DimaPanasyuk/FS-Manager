@@ -64,7 +64,7 @@ app.put('/api/folders/:folderName/files/:fileName/:extension', (req, res, next) 
   });
 });
 
-app.get('/api/folders', (req, res, next) => {
+app.get('/api/items', (req, res, next) => {
   var foldersToSend = [];
   const folderPath = `${__dirname}/app`;
   fs.readdir('app', (err, list) => {
@@ -90,20 +90,21 @@ app.get('/api/folders', (req, res, next) => {
       });
       res.send({
         status: true,
+        rootPath: `${__dirname}/app`,
         items: foldersToSend
       });
     }
   });
 });
 
-app.post('/api/folders', (req, res, next) => {
-  const newItemType = req.body.type;
+app.post('/api/items', (req, res, next) => {
+  const itemType = req.body.type;
   const itemName = req.body.name;
   const itemExt = req.body.extension ? req.body.extension : null;
-  const parentFolder = req.body.parent;
-  if (newItemType === 'folder') {
-    console.log(`${__dirname}/${parentFolder}/${itemName}`);
-    fs.mkdir(`${__dirname}/${parentFolder}/${itemName}`, (err) => {
+  const itemPath = req.body.folderPath; 
+  if (itemType === 'folder') {
+    console.log(`${itemPath}`);
+    fs.mkdir(`${itemPath}/${itemName}`, (err) => {
       if (err) {
         res.send({
           status: false,
@@ -116,7 +117,7 @@ app.post('/api/folders', (req, res, next) => {
       }
     });
   } else {
-    fs.writeFile(`${__dirname}/${parentFolder}/${itemName}${itemExt}`, '', (err) => {
+    fs.writeFile(`${itemPath}/${itemName}${itemExt}`, '', (err) => {
       if (err) {
         res.send({
           status: false

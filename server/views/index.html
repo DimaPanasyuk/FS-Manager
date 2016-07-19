@@ -7,7 +7,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.2/toastr.css">
     <link rel="stylesheet" href="main.css">
   </head>
-  <body ng-app="main">
+  <body ng-app="main" 
+        ng-controller="Main">
     <header>
       <div class="container">
         <div class="row">
@@ -15,6 +16,22 @@
             <div class="panel panel-primary">
               <div class="panel-heading text-center">
                 <strong>File Manager</strong>
+                <div class="btn-group pull-right">
+                  <div class="btn-group">
+                    <button class="btn btn-xs btn-default"
+                            ng-class="{'btn-primary': gridType === 'list'}"
+                            ng-click="setGridType('list')">
+                      <span class="glyphicon glyphicon-th-list"></span>
+                    </button>
+                  </div>
+                  <div class="btn-group">
+                    <button class="btn btn-xs btn-default"
+                            ng-class="{'btn-primary': gridType === 'blocks'}"
+                            ng-click="setGridType('blocks')">
+                      <span class="glyphicon glyphicon-th"></span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

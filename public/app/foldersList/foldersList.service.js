@@ -4,7 +4,7 @@
   .service('foldersListService', foldersListService);
   foldersListService.$inject = ['$resource'];
   function foldersListService($resource) {
-    var foldersResource = $resource('/api/folders', {}, {
+    var foldersResource = $resource('/api/items', {}, {
       createNew: {
         method: 'POST'
       }

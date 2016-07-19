@@ -12,17 +12,21 @@
     '$window'
   ];
   function FoldersList($scope, $rootScope, foldersPromise, $location, foldersListService, $window) {
+    var rootPath = null;
     foldersPromise
     .$promise
     .then(function(data) {
       $scope.items = data.items;
+      rootPath = data.rootPath;
     });
 
     $scope.getData = getData;
     $scope.openCreateModal = openCreateModal;
+    $scope.openFolderExtendModal = openFolderExtendModal;
     $scope.setType = setType;
     $scope.createNewItem = createNewItem;
     $scope.removeItem = removeItem;
+    $scope.extendFolder = extendFolder;
 
     function getData(data) {
       if (isFolder(data)) {
@@ -50,6 +54,29 @@
       $scope.newItem = {
         type: 'folder'
       };
+      $scope.creationType = 'new';
+    }
+
+    function openFolderExtendModal(item) {
+      $scope.newItem = {
+        type: 'folder',
+        folderPath: item.path
+      };
+      $scope.creationType = 'extend';
+    }
+
+    function extendFolder() {
+      var options = angular.extend({}, $scope.newItem);
+      foldersListService
+      .createNewItem(options)
+      .then(function(data) {
+        if (data.status) {
+          toastr.success('<b>New item created successfully!</b>');
+        } else {
+          toastr.error('<b>Error while creating new item!</b>');
+        }
+      })
+      .then(getFolders);
     }
 
     function setType(type) {
@@ -75,7 +102,7 @@
 
     function createNewItem() {
       var options = angular.extend({}, $scope.newItem);
-      options.parent = 'app';
+      options.folderPath = rootPath;
       foldersListService
       .createNewItem(options)
       .then(function(data) {

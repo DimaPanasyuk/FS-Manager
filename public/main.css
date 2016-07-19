@@ -8,6 +8,9 @@
 .folder:hover {
   box-shadow: 0 0 3px 1px lightcoral;
 }
+.folder--list:hover {
+  box-shadow: inset 0 0 3px 1px cadetblue;
+}
 .create {
   transition: all 0.2s ease;
   cursor: pointer;
@@ -39,4 +42,10 @@
 }
 .folder-add-data:hover {
   font-size: 15px;
+}
+.grid-list__icon {
+  font-size: 26px;
+}
+.grid-list__text {
+  font-size: 21px;
 }

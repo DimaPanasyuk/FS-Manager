@@ -54,7 +54,15 @@
       </div>
       <div class="modal-footer">
         <button type="button"
+                ng-if="creationType === 'new'"
                 ng-click="createNewItem()" 
+                data-dismiss="modal"
+                class="btn btn-primary">
+            Create
+        </button>
+        <button type="button"
+                ng-if="creationType === 'extend'"
+                ng-click="extendFolder()" 
                 data-dismiss="modal"
                 class="btn btn-primary">
             Create
@@ -70,15 +78,17 @@
 </div>
 
 <div class="col-sm-2"
+     ng-if="gridType === 'blocks'"
      ng-repeat="item in items">
   <div class="panel panel-default folder">
     <span class="glyphicon glyphicon-remove-circle text-danger remove-folder"
           ng-click="removeItem(item)">
     </span>
     <span class="glyphicon glyphicon-plus-sign text-primary folder-add-data"
+          ng-if="item.type !== 'file'"
           data-toggle="modal"
           data-target="#createModal"
-          ng-click="openCreateModal()">
+          ng-click="openFolderExtendModal(item)">
     </span>
     <div class="panel-body text-center"
          ng-click="getData(item)">
@@ -95,6 +105,52 @@
     </div>
   </div>
 </div>
+
+<ul class="list-group"
+    ng-if="gridType === 'list'">
+    <li class="list-group-item folder folder--list"
+        ng-click="getData(item)"
+        ng-repeat="item in items">
+        <div class="row">
+            <div class="col-sm-1">
+                <span class="glyphicon glyphicon-folder-close text-primary grid-list__icon"
+                      ng-if="item.type === 'folder' && !item.empty">
+                </span>
+                <span class="glyphicon glyphicon-folder-open text-primary grid-list__icon"
+                    ng-if="item.empty">
+                </span>
+                <span class="glyphicon glyphicon-file text-danger grid-list__icon"
+                    ng-if="item.type === 'file'">
+                </span>
+            </div>
+            <div class="col-sm-9">
+                <strong class="grid-list__text">
+                    {{item.name}}
+                </strong>
+            </div>
+            <div class="col-sm-2">
+                <div class="btn-group btn-group-justified">
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-primary"
+                                ng-if="item.type !== 'file'"
+                                data-toggle="modal"
+                                data-target="#createModal"
+                                ng-click="openFolderExtendModal(item)">
+                            <strong>Extend</strong>
+                        </button>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-danger"
+                                ng-click="removeItem(item)">
+                            <strong>Delete</strong>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </li>
+</ul>
+
 <div class="col-sm-2">
     <div class="panel panel-default create"
          data-toggle="modal"
