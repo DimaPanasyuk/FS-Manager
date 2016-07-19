@@ -1,36 +1,8 @@
-const express = require('express');
-const morgan = require('morgan');
-const fs = require('fs');
-const bodyParser = require('body-parser');
-const isFolder = require('./server/utils/isFolder');
-
-const app = express();
-
-app.use(morgan('dev'));
-app.use(bodyParser.urlencoded());
-app.use(bodyParser.json());
-app.use(express.static('./public'));
-
-app.get('/api/check/:name', (req, res, next) => {
-  fs.readdir(`${__dirname}/app/${req.params.name}`, (err, files) => {
-    console.log(files);
-    if (err) console.log(err);
-    if (files.length) {
-      res.send({
-        status: true,
-        content: true
-      });
-    } else {
-      res.send({
-        status: true,
-        content: false
-      });
-    }
-  });
-});
+const router = require('express').Router;
 
 
-app.get('/api/folders/:folderName/files/:fileName/:extension', (req, res, next) => {
+
+router.get('/:folderName/files/:fileName/:extension', (req, res, next) => {
   const folderName = req.params.folderName;
   const fileName = req.params.fileName;
   const extension = req.params.extension;
@@ -48,7 +20,7 @@ app.get('/api/folders/:folderName/files/:fileName/:extension', (req, res, next) 
   });
 });
 
-app.put('/api/folders/:folderName/files/:fileName/:extension', (req, res, next) => {
+router.put('/:folderName/files/:fileName/:extension', (req, res, next) => {
   const folderName = req.params.folderName;
   const fileName = req.params.fileName;
   const extension = req.params.extension;
@@ -64,9 +36,8 @@ app.put('/api/folders/:folderName/files/:fileName/:extension', (req, res, next) 
   });
 });
 
-app.get('/api/folders', (req, res, next) => {
+router.get('', (req, res, next) => {
   var foldersToSend = [];
-  const folderPath = `${__dirname}/app`;
   fs.readdir('app', (err, list) => {
     console.log(list);
     if (err) { console.log(err); }
@@ -76,15 +47,13 @@ app.get('/api/folders', (req, res, next) => {
           foldersToSend
           .push({
             name: item,
-            type: 'folder',
-            path: `${folderPath}/${item}`
+            type: 'folder'
           });
         } else {
           foldersToSend
           .push({
             name: item,
-            type: 'file',
-            path: `${folderPath}/${item}`
+            type: 'file'
           });
         }
       });
@@ -96,7 +65,7 @@ app.get('/api/folders', (req, res, next) => {
   });
 });
 
-app.post('/api/folders', (req, res, next) => {
+router.post('', (req, res, next) => {
   const newItemType = req.body.type;
   const itemName = req.body.name;
   const itemExt = req.body.extension ? req.body.extension : null;
@@ -130,7 +99,7 @@ app.post('/api/folders', (req, res, next) => {
   }
 });
 
-app.get('/api/folders/:name', (req, res, next) => {
+router.get('/:name', (req, res, next) => {
   const dirPath = `${__dirname}/app/${req.params.name}`;
   var dataToSend = [];
   fs.exists(dirPath, (exists) => {
@@ -166,43 +135,13 @@ app.get('/api/folders/:name', (req, res, next) => {
   });
 });
 
-app.delete('/api/folders/:name', (req, res, next) => {
+router.delete('/:name', (req, res, next) => {
   const itemName = req.params.name;
-  const itemExt = (req.query.ext) ? req.query.ext : null;
   const itemType = req.query.type;
-  const parentFolder = req.query.parent;
-  if (itemType === 'folder') {
-    fs.rmdir(`${__dirname}/${parentFolder}/${itemName}`, (err) => {
-      if (err) {
-        res.send({
-          status: false,
-          message: err.toString()
-        });
-      } else {
-        res.send({
-          status: true
-        });
-      }
-    });
-  } else {
-    fs.unlink(`${__dirname}/${parentFolder}/${itemName}.${itemExt}`, (err) => {
-      if (err) {
-        res.send({
-          status: false,
-          message: err.toString()
-        });
-      } else {
-        res.send({
-          status: true
-        });
-      }
-    });
-  }
+  res.send({
+    status: true,
+    data: itemType
+  });
 });
 
-app.use('/app', express.static('./public/app'));
-app.get('*', (req, res, next) => {
-  res.sendFile(`${__dirname}/server/views/index.html`);
-});
-
-app.listen(3000);
+module.exports = router;

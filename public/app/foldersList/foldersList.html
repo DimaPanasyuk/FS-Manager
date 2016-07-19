@@ -72,8 +72,13 @@
 <div class="col-sm-2"
      ng-repeat="item in items">
   <div class="panel panel-default folder">
-    <span class="glyphicon glyphicon-remove-circle"
+    <span class="glyphicon glyphicon-remove-circle text-danger remove-folder"
           ng-click="removeItem(item)">
+    </span>
+    <span class="glyphicon glyphicon-plus-sign text-primary folder-add-data"
+          data-toggle="modal"
+          data-target="#createModal"
+          ng-click="openCreateModal()">
     </span>
     <div class="panel-body text-center"
          ng-click="getData(item)">

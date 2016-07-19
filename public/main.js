@@ -250,7 +250,20 @@
     }
 
     function removeItem(item) {
-      
+      var data = angular.extend({}, item);
+      data.name = (item.type === 'file') ? item.name.split('.')[0] : item.name;
+      data.parent = 'app';
+      data.ext =  (item.type === 'file') ? item.name.split('.')[1] : null;
+      foldersListService
+      .removeItem(data)
+      .then(function(data) {
+        if (data.status) {
+          toastr.success('<b>Item ' + item.name + ' deleted successfully!</b>');
+        } else {
+          toastr.error('<b>Error while deleting item!</b>');
+        }
+      })
+      .then(getFolders);
     }
 
     function createNewItem() {
@@ -265,17 +278,19 @@
           toastr.error('<b>Error while creating new item!</b>');
         }
       })
-      .then(function() {
-        foldersListService
-        .getFolders()
-        .then(function(data) {
-          $scope.items = data.items; 
-        });
-      });
+      .then(getFolders);
     }
 
     function isFolder(item) {
       return (item.name.indexOf('.') > -1) ? false : true;
+    }
+    
+    function getFolders(data) {
+      foldersListService
+      .getFolders()
+      .then(function(data) {
+        $scope.items = data.items;
+      });
     }
   }
 })();
@@ -310,10 +325,16 @@
       }
     });
     var folderResource = $resource('/api/check/:name', {name: '@name'});
+    var removeFolderResource = $resource('/api/folders/:name', {name: '@name'}, {
+      removeItem: {
+        method: 'DELETE'
+      }
+    });
     return {
       getFolders: getFolders,
       checkIfEmpty: checkIfEmpty,
-      createNewItem: createNewItem
+      createNewItem: createNewItem,
+      removeItem: removeItem
     };
 
     function getFolders() {
@@ -332,6 +353,12 @@
       return foldersResource
               .createNew(options)
               .$promise;
+    }
+
+    function removeItem(options) {
+      return removeFolderResource
+              .removeItem(options)
+              .$promise;              
     }
   }
 })();

@@ -3,6 +3,7 @@
   cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
+  position: relative;
   &:hover {
     box-shadow: 0 0 3px 1px lightcoral;
   }
@@ -10,4 +11,28 @@
 
 .create {
   .folder;
+}
+
+.remove-folder {
+  position: absolute;
+  right: 0;
+  margin: 10px;
+  font-size: 17px;
+  padding: 5px;
+  transition: all 0.1s ease;
+  &:hover {
+    font-size: 15px;
+  }
+}
+
+.folder-add-data {
+  position: absolute;
+  right: 0;
+  margin: 33px 10px;
+  font-size: 17px;
+  padding: 5px;
+  transition: all 0.1s ease;
+  &:hover {
+    font-size: 15px;
+  }
 }

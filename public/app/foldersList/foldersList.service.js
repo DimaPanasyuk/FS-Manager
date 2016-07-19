@@ -10,10 +10,16 @@
       }
     });
     var folderResource = $resource('/api/check/:name', {name: '@name'});
+    var removeFolderResource = $resource('/api/folders/:name', {name: '@name'}, {
+      removeItem: {
+        method: 'DELETE'
+      }
+    });
     return {
       getFolders: getFolders,
       checkIfEmpty: checkIfEmpty,
-      createNewItem: createNewItem
+      createNewItem: createNewItem,
+      removeItem: removeItem
     };
 
     function getFolders() {
@@ -32,6 +38,12 @@
       return foldersResource
               .createNew(options)
               .$promise;
+    }
+
+    function removeItem(options) {
+      return removeFolderResource
+              .removeItem(options)
+              .$promise;              
     }
   }
 })();
