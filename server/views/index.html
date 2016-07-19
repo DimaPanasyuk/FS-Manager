@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>FS Manager</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.2/toastr.css">
+    <link rel="stylesheet" href="main.css">
+  </head>
+  <body ng-app="main">
+    <header>
+      <div class="container">
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="panel panel-primary">
+              <div class="panel-heading text-center">
+                <strong>File Manager</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+    <section ng-if="folderTitle">
+      <div class="container">
+        <div class="row">
+          <div class="panel panel-primary">
+            <div class="panel-body">
+              <div class="col-sm-12">
+                <div class="label label-primary">
+                  {{folderTitle}}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section>
+      <div class="container">
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="panel panel-primary">
+              <div class="panel-body">
+                <div ng-view></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.0/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.2/toastr.min.js"></script>
+    <script src="vendor.js"></script>
+    <script src="main.js"></script>
+  </body>
+</html>

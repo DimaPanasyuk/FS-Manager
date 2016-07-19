@@ -1,0 +1,18 @@
+.folder {
+  transition: all 0.2s ease;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.folder:hover {
+  box-shadow: 0 0 3px 1px lightcoral;
+}
+.create {
+  transition: all 0.2s ease;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.create:hover {
+  box-shadow: 0 0 3px 1px lightcoral;
+}

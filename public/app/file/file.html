@@ -1,0 +1,29 @@
+<div class="form-group">
+  <div class="row">
+    <div class="col-sm-12">
+      <label for="fileName">File name</label>
+      <input type="text" 
+             id="fileName"
+             ng-model="file.name"
+             class="form-control">
+      
+    </div>
+  </div>
+</div>
+<div class="form-group">
+  <div class="row">
+    <div class="col-sm-12">
+      <label for="fileContent">File content</label>
+      <textarea id="fileContent"
+                style="resize: vertical"
+                ng-model="file.content" 
+                rows="5" 
+                class="form-control">
+      </textarea>
+    </div>
+  </div>
+</div>
+<button class="btn btn-primary btn-sm"
+        ng-click="updateFile()">
+  Update file
+</button>
