@@ -28,6 +28,7 @@
       } else {
         $rootScope.openedItems = parsedUrl;
       }
+      console.log($rootScope.openedItems);
     });
   }]);
 
@@ -39,11 +40,17 @@
   function Main($scope, $rootScope, $location) {
     var sessionToken = sessionStorage.getItem('gridType');
     $scope.gridType = (sessionToken) ? sessionToken : 'blocks';
+
     $scope.setGridType = setGridType;
-      
+    $scope.handleItemClick = handleItemClick;
+
     function setGridType(type) {
       $scope.gridType = type;
       sessionStorage.setItem('gridType', type);
+    }
+
+    function handleItemClick(path) {
+      $location.path(path);
     }
   }
 })();

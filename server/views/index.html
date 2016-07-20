@@ -47,7 +47,8 @@
                 <div class="btn-group">
                   <div class="btn-group"
                       ng-repeat="item in openedItems">
-                    <button class="btn btn-default">
+                    <button class="btn btn-default"
+                            ng-click="handleItemClick(item.path)">
                       <strong>
                         <span class="glyphicon glyphicon-folder-close text-primary"
                               ng-if="item.type === 'folder'">

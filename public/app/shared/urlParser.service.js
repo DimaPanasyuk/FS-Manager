@@ -4,6 +4,7 @@
   .service('_url', urlParser);
 
   function urlParser() {
+    var absUrl;
     return {
       parse: parse
     };
@@ -11,6 +12,7 @@
     function parse(url) {
       if (pathExists(url)) {
         var pathIndex = findPathIndex(url);
+        absPath = extractPath(url, pathIndex);
         return parsePath(extractPath(url, pathIndex));
       } else {
         return url;
@@ -40,18 +42,21 @@
                       if (item.indexOf('.') > -1) {
                         return {
                           name: item,
-                          type: 'file'
+                          type: 'file',
+                          path: handlePathTo(item, 'file')
                         };
                       } else {
                         if (item === 'app') {
                           return {
                             name: item,
-                            type: 'home'
+                            type: 'home',
+                            path: handlePathTo(item, 'home')
                           };
                         }
                         return {
                           name: item,
-                          type: 'folder'
+                          type: 'folder',
+                          path: handlePathTo(item, 'folder')
                         };
                       }
                     });
@@ -65,6 +70,25 @@
     function extractHomeFolder(url) {
       var _folderIndex = url.indexOf('/app/');
       return url.slice(_folderIndex);
+    }
+
+    function handlePathTo(item, type) {
+      var _tokens = {
+        'folder': {
+          path: '/folders/:name/path'
+        }, 
+        'file': {
+          path: '/files/:name/path'
+        },
+        'home': {
+          path: '/folders'
+        }
+      };
+      if (type === 'home') {
+        return _tokens[type].path;
+      } else {
+        return _tokens[type].path.replace(':name', item);
+      }
     }
   }
 })();

@@ -3,12 +3,6 @@
   .module('main.file', []);
 })(); 
 (function() {
-  angular
-  .module('main.folder', [
-    'main.shared'
-  ]);
-})();
-(function() {
   angular.module('main.foldersList', [
     'main.shared'
   ]);
@@ -64,6 +58,12 @@
 })();
 (function() {
   angular
+  .module('main.folder', [
+    'main.shared'
+  ]);
+})();
+(function() {
+  angular
   .module('main', [
     'ngRoute', 
     'ngResource',
@@ -92,6 +92,7 @@
       } else {
         $rootScope.openedItems = parsedUrl;
       }
+      console.log($rootScope.openedItems);
     });
   }]);
 
@@ -103,11 +104,17 @@
   function Main($scope, $rootScope, $location) {
     var sessionToken = sessionStorage.getItem('gridType');
     $scope.gridType = (sessionToken) ? sessionToken : 'blocks';
+
     $scope.setGridType = setGridType;
-      
+    $scope.handleItemClick = handleItemClick;
+
     function setGridType(type) {
       $scope.gridType = type;
       sessionStorage.setItem('gridType', type);
+    }
+
+    function handleItemClick(path) {
+      $location.path(path);
     }
   }
 })();
@@ -213,6 +220,248 @@
                 path: options.path
               })
               .$promise;
+    }
+  }
+})();
+(function() {
+  angular
+  .module('main.foldersList')
+  .controller('FoldersList', FoldersList);
+
+  FoldersList.$inject = [
+    '$scope', 
+    '$rootScope', 
+    'foldersPromise',
+    '$location',
+    'foldersListService',
+    '$window'
+  ];
+  function FoldersList($scope, $rootScope, foldersPromise, $location, foldersListService, $window) {
+    var rootPath = null;
+    foldersPromise
+    .$promise
+    .then(function(data) {
+      $scope.items = data.items;
+      rootPath = data.rootPath;
+    });
+
+    $scope.getData = getData;
+    $scope.openCreateModal = openCreateModal;
+    $scope.openFolderExtendModal = openFolderExtendModal;
+    $scope.setType = setType;
+    $scope.createNewItem = createNewItem;
+    $scope.removeItem = removeItem;
+    $scope.extendFolder = extendFolder;
+
+    function getData(data) {
+      if (isFolder(data)) {
+        if (data.empty) {
+          data.empty = false;
+        } else {
+          foldersListService
+          .checkIfEmpty(data)
+          .then(function(resp) {
+            if (resp.content) {
+              $location.path('/folders/' + data.name + '/path/' + encodeURIComponent(data.path));
+            } else {
+              toastr.info('<b>Folder ' + data.name + ' is empty!</b>');
+              data.empty = true;
+            }
+          });
+        }
+      } else {
+        console.log(data.name);
+        $location.path('/files/'+ data.name.split('.')[0] + '/path/' + encodeURIComponent(data.path));
+      }
+    }
+
+    function openCreateModal() {
+      $scope.newItem = {
+        type: 'folder'
+      };
+      $scope.creationType = 'new';
+    }
+
+    function openFolderExtendModal(item) {
+      $scope.newItem = {
+        type: 'folder',
+        folderPath: item.path
+      };
+      $scope.creationType = 'extend';
+    }
+
+    function extendFolder() {
+      var options = angular.extend({}, $scope.newItem);
+      foldersListService
+      .createNewItem(options)
+      .then(function(data) {
+        if (data.status) {
+          toastr.success('<b>New item created successfully!</b>');
+        } else {
+          toastr.error('<b>Error while creating new item!</b>');
+        }
+      })
+      .then(getFolders);
+    }
+
+    function setType(type) {
+      $scope.newItem.type = type;
+    }
+
+    function removeItem(item) {
+      var data = angular.extend({}, item);
+      data.name = (item.type === 'file') ? item.name.split('.')[0] : item.name;
+      data.ext =  (item.type === 'file') ? item.name.split('.')[1] : null;
+      foldersListService
+      .removeItem(data)
+      .then(function(data) {
+        if (data.status) {
+          toastr.success('<b>Item ' + item.name + ' deleted successfully!</b>');
+        } else {
+          toastr.error('<b>Error while deleting item!</b>');
+        }
+      })
+      .then(getFolders);
+    }
+
+    function createNewItem() {
+      var options = angular.extend({}, $scope.newItem);
+      options.folderPath = rootPath;
+      foldersListService
+      .createNewItem(options)
+      .then(function(data) {
+        if (data.status) {
+          toastr.success('<b>New item created successfully!</b>');
+        } else {
+          toastr.error('<b>Error while creating new item!</b>');
+        }
+      })
+      .then(getFolders);
+    }
+
+    function isFolder(item) {
+      return (item.name.indexOf('.') > -1) ? false : true;
+    }
+    
+    function getFolders(data) {
+      foldersListService
+      .getFolders()
+      .then(function(data) {
+        $scope.items = data.items;
+      });
+    }
+  }
+})();
+(function() {
+  angular
+  .module('main.foldersList')
+  .config(foldersListConfig);
+
+  foldersListConfig.$inject = ['$routeProvider'];
+  function foldersListConfig($routeProvider) {
+    $routeProvider
+    .when('/folders', {
+      templateUrl: 'app/foldersList/foldersList.html',
+      controller: 'FoldersList',
+      resolve: {
+        foldersPromise: ['foldersListService', function(foldersListService) {
+          return foldersListService.getFolders();
+        }]
+      }
+    });
+  }
+})();
+(function() {
+  angular
+  .module('main.shared')
+  .service('_url', urlParser);
+
+  function urlParser() {
+    var absUrl;
+    return {
+      parse: parse
+    };
+
+    function parse(url) {
+      if (pathExists(url)) {
+        var pathIndex = findPathIndex(url);
+        absPath = extractPath(url, pathIndex);
+        return parsePath(extractPath(url, pathIndex));
+      } else {
+        return url;
+      }
+    }
+
+    function pathExists(url) {
+      return url.indexOf('/path/') > -1;
+    }
+
+    function findPathIndex(url) {
+      return url.lastIndexOf('/path/');
+    }
+
+    function extractPath(url, index) {
+      var pathToken = index + 6;
+      return extractHomeFolder(decodePath(url.slice(pathToken)));
+    }
+
+    function parsePath(path) {
+      var _parsed = path
+                    .split('/')
+                    .filter(function(item) {
+                      return item.length > 0;
+                    })
+                    .map(function(item) {
+                      if (item.indexOf('.') > -1) {
+                        return {
+                          name: item,
+                          type: 'file',
+                          path: handlePathTo(item, 'file')
+                        };
+                      } else {
+                        if (item === 'app') {
+                          return {
+                            name: item,
+                            type: 'home',
+                            path: handlePathTo(item, 'home')
+                          };
+                        }
+                        return {
+                          name: item,
+                          type: 'folder',
+                          path: handlePathTo(item, 'folder')
+                        };
+                      }
+                    });
+      return _parsed;
+    }
+
+    function decodePath(path) {
+      return decodeURIComponent(decodeURIComponent(path));
+    }
+
+    function extractHomeFolder(url) {
+      var _folderIndex = url.indexOf('/app/');
+      return url.slice(_folderIndex);
+    }
+
+    function handlePathTo(item, type) {
+      var _tokens = {
+        'folder': {
+          path: '/folders/:name/path'
+        }, 
+        'file': {
+          path: '/files/:name/path'
+        },
+        'home': {
+          path: '/folders'
+        }
+      };
+      if (type === 'home') {
+        return _tokens[type].path;
+      } else {
+        return _tokens[type].path.replace(':name', item);
+      }
     }
   }
 })();
@@ -389,224 +638,6 @@
       return folderResource
               .get(options)
               .$promise;
-    }
-  }
-})();
-(function() {
-  angular
-  .module('main.foldersList')
-  .controller('FoldersList', FoldersList);
-
-  FoldersList.$inject = [
-    '$scope', 
-    '$rootScope', 
-    'foldersPromise',
-    '$location',
-    'foldersListService',
-    '$window'
-  ];
-  function FoldersList($scope, $rootScope, foldersPromise, $location, foldersListService, $window) {
-    var rootPath = null;
-    foldersPromise
-    .$promise
-    .then(function(data) {
-      $scope.items = data.items;
-      rootPath = data.rootPath;
-    });
-
-    $scope.getData = getData;
-    $scope.openCreateModal = openCreateModal;
-    $scope.openFolderExtendModal = openFolderExtendModal;
-    $scope.setType = setType;
-    $scope.createNewItem = createNewItem;
-    $scope.removeItem = removeItem;
-    $scope.extendFolder = extendFolder;
-
-    function getData(data) {
-      if (isFolder(data)) {
-        if (data.empty) {
-          data.empty = false;
-        } else {
-          foldersListService
-          .checkIfEmpty(data)
-          .then(function(resp) {
-            if (resp.content) {
-              $location.path('/folders/' + data.name + '/path/' + encodeURIComponent(data.path));
-            } else {
-              toastr.info('<b>Folder ' + data.name + ' is empty!</b>');
-              data.empty = true;
-            }
-          });
-        }
-      } else {
-        console.log(data.name);
-        $location.path('/files/'+ data.name.split('.')[0] + '/path/' + encodeURIComponent(data.path));
-      }
-    }
-
-    function openCreateModal() {
-      $scope.newItem = {
-        type: 'folder'
-      };
-      $scope.creationType = 'new';
-    }
-
-    function openFolderExtendModal(item) {
-      $scope.newItem = {
-        type: 'folder',
-        folderPath: item.path
-      };
-      $scope.creationType = 'extend';
-    }
-
-    function extendFolder() {
-      var options = angular.extend({}, $scope.newItem);
-      foldersListService
-      .createNewItem(options)
-      .then(function(data) {
-        if (data.status) {
-          toastr.success('<b>New item created successfully!</b>');
-        } else {
-          toastr.error('<b>Error while creating new item!</b>');
-        }
-      })
-      .then(getFolders);
-    }
-
-    function setType(type) {
-      $scope.newItem.type = type;
-    }
-
-    function removeItem(item) {
-      var data = angular.extend({}, item);
-      data.name = (item.type === 'file') ? item.name.split('.')[0] : item.name;
-      data.ext =  (item.type === 'file') ? item.name.split('.')[1] : null;
-      foldersListService
-      .removeItem(data)
-      .then(function(data) {
-        if (data.status) {
-          toastr.success('<b>Item ' + item.name + ' deleted successfully!</b>');
-        } else {
-          toastr.error('<b>Error while deleting item!</b>');
-        }
-      })
-      .then(getFolders);
-    }
-
-    function createNewItem() {
-      var options = angular.extend({}, $scope.newItem);
-      options.folderPath = rootPath;
-      foldersListService
-      .createNewItem(options)
-      .then(function(data) {
-        if (data.status) {
-          toastr.success('<b>New item created successfully!</b>');
-        } else {
-          toastr.error('<b>Error while creating new item!</b>');
-        }
-      })
-      .then(getFolders);
-    }
-
-    function isFolder(item) {
-      return (item.name.indexOf('.') > -1) ? false : true;
-    }
-    
-    function getFolders(data) {
-      foldersListService
-      .getFolders()
-      .then(function(data) {
-        $scope.items = data.items;
-      });
-    }
-  }
-})();
-(function() {
-  angular
-  .module('main.foldersList')
-  .config(foldersListConfig);
-
-  foldersListConfig.$inject = ['$routeProvider'];
-  function foldersListConfig($routeProvider) {
-    $routeProvider
-    .when('/folders', {
-      templateUrl: 'app/foldersList/foldersList.html',
-      controller: 'FoldersList',
-      resolve: {
-        foldersPromise: ['foldersListService', function(foldersListService) {
-          return foldersListService.getFolders();
-        }]
-      }
-    });
-  }
-})();
-(function() {
-  angular
-  .module('main.shared')
-  .service('_url', urlParser);
-
-  function urlParser() {
-    return {
-      parse: parse
-    };
-
-    function parse(url) {
-      if (pathExists(url)) {
-        var pathIndex = findPathIndex(url);
-        return parsePath(extractPath(url, pathIndex));
-      } else {
-        return url;
-      }
-    }
-
-    function pathExists(url) {
-      return url.indexOf('/path/') > -1;
-    }
-
-    function findPathIndex(url) {
-      return url.lastIndexOf('/path/');
-    }
-
-    function extractPath(url, index) {
-      var pathToken = index + 6;
-      return extractHomeFolder(decodePath(url.slice(pathToken)));
-    }
-
-    function parsePath(path) {
-      var _parsed = path
-                    .split('/')
-                    .filter(function(item) {
-                      return item.length > 0;
-                    })
-                    .map(function(item) {
-                      if (item.indexOf('.') > -1) {
-                        return {
-                          name: item,
-                          type: 'file'
-                        };
-                      } else {
-                        if (item === 'app') {
-                          return {
-                            name: item,
-                            type: 'home'
-                          };
-                        }
-                        return {
-                          name: item,
-                          type: 'folder'
-                        };
-                      }
-                    });
-      return _parsed;
-    }
-
-    function decodePath(path) {
-      return decodeURIComponent(decodeURIComponent(path));
-    }
-
-    function extractHomeFolder(url) {
-      var _folderIndex = url.indexOf('/app/');
-      return url.slice(_folderIndex);
     }
   }
 })();
