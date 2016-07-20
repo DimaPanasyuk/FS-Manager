@@ -11,9 +11,9 @@
     };
 
     function getFolder(options) {
-      var name = options.name;
+      console.log(options);
       return folderResource
-              .get({name: name})
+              .get(options)
               .$promise;
     }
   }

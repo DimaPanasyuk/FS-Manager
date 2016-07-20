@@ -1,6 +1,6 @@
 (function() {
   angular
-  .module('main.foldersList')
+  .module('main.shared', [])
   .service('foldersListService', foldersListService);
   foldersListService.$inject = ['$resource'];
   function foldersListService($resource) {
@@ -28,9 +28,9 @@
               .$promise;
     }
 
-    function checkIfEmpty(name) {
+    function checkIfEmpty(options) {
       return folderResource
-              .get({name: name})
+              .get(options)
               .$promise;
     }
 

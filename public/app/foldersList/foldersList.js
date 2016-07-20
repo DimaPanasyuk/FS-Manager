@@ -34,10 +34,10 @@
           data.empty = false;
         } else {
           foldersListService
-          .checkIfEmpty(data.name)
+          .checkIfEmpty(data)
           .then(function(resp) {
             if (resp.content) {
-              $location.path('/folders/' + data.name);
+              $location.path('/folders/' + data.name + '/path/' + encodeURIComponent(data.path));
             } else {
               toastr.info('<b>Folder ' + data.name + ' is empty!</b>');
               data.empty = true;
@@ -86,7 +86,6 @@
     function removeItem(item) {
       var data = angular.extend({}, item);
       data.name = (item.type === 'file') ? item.name.split('.')[0] : item.name;
-      data.parent = 'app';
       data.ext =  (item.type === 'file') ? item.name.split('.')[1] : null;
       foldersListService
       .removeItem(data)

@@ -3,6 +3,7 @@ const morgan = require('morgan');
 const fs = require('fs');
 const bodyParser = require('body-parser');
 const isFolder = require('./server/utils/isFolder');
+const rimraf = require('rimraf');
 
 const app = express();
 
@@ -12,8 +13,7 @@ app.use(bodyParser.json());
 app.use(express.static('./public'));
 
 app.get('/api/check/:name', (req, res, next) => {
-  fs.readdir(`${__dirname}/app/${req.params.name}`, (err, files) => {
-    console.log(files);
+  fs.readdir(`${req.query.path}`, (err, files) => {
     if (err) console.log(err);
     if (files.length) {
       res.send({
@@ -30,38 +30,57 @@ app.get('/api/check/:name', (req, res, next) => {
 });
 
 
-app.get('/api/folders/:folderName/files/:fileName/:extension', (req, res, next) => {
-  const folderName = req.params.folderName;
-  const fileName = req.params.fileName;
-  const extension = req.params.extension;
-  fs.readFile(`${__dirname}/${folderName}/${fileName}.${extension}`, (err, data) => {
+app.get('/api/files/:name', (req, res, next) => {
+  const name = req.params.name;
+  const path = req.query.path;
+  fs.readFile(`${path}`, (err, data) => {
     if (err) console.log(err);
     if (data) {
       res.send({
         status: true,
         file: {
-          name: fileName,
+          name: name,
           content: data.toString()
         }
+      });
+    } else {
+      res.send({
+        status: false
       });
     }
   });
 });
 
-app.put('/api/folders/:folderName/files/:fileName/:extension', (req, res, next) => {
-  const folderName = req.params.folderName;
-  const fileName = req.params.fileName;
-  const extension = req.params.extension;
-  const fileData = req.body.newContent;
-
-  fs.writeFile(`${__dirname}/${folderName}/${fileName}.${extension}`, fileData, (err, data) => {
-    if (err) console.log(err);
-    if (!err) {
-      res.send({
-        status: true
-      });
-    }
-  });
+app.put('/api/files/:name', (req, res, next) => {
+  const name = req.params.name;
+  const newName = req.body.newName;
+  const path = req.body.path;
+  const data = req.body.data;
+  var newPath = null;
+  if (newName !== name) {
+    newPath = path.replace(name, newName);
+    fs.rename(path, newPath, (err) => {
+      if (err) {
+        console.log(err);
+        res.send({
+          status: false,
+        });
+      } else {
+        fs.writeFile(`${newPath}`, data, (err, data) => {
+          if (err) console.log(err);
+          if (!err) {
+            res.send({
+              status: true
+            });
+          } else {
+            res.send({
+              status: false
+            });
+          }
+        });
+      }
+    });
+  }
 });
 
 app.get('/api/items', (req, res, next) => {
@@ -132,7 +151,7 @@ app.post('/api/items', (req, res, next) => {
 });
 
 app.get('/api/folders/:name', (req, res, next) => {
-  const dirPath = `${__dirname}/app/${req.params.name}`;
+  const dirPath = req.query.path;
   var dataToSend = [];
   fs.exists(dirPath, (exists) => {
     if (exists) {
@@ -148,12 +167,14 @@ app.get('/api/folders/:name', (req, res, next) => {
             if (isFolder(item)) {
               dataToSend.push({
                 name: item,
-                type: 'folder'
+                type: 'folder',
+                path: `${dirPath}/${item}`
               });
             } else {
               dataToSend.push({
                 name: item,
-                type: 'file'
+                type: 'file',
+                path: `${dirPath}/${item}`
               });
             }
           });
@@ -168,12 +189,11 @@ app.get('/api/folders/:name', (req, res, next) => {
 });
 
 app.delete('/api/folders/:name', (req, res, next) => {
-  const itemName = req.params.name;
   const itemExt = (req.query.ext) ? req.query.ext : null;
   const itemType = req.query.type;
-  const parentFolder = req.query.parent;
+  const itemPath = req.query.path;
   if (itemType === 'folder') {
-    fs.rmdir(`${__dirname}/${parentFolder}/${itemName}`, (err) => {
+    rimraf(`${itemPath}`, (err) => {
       if (err) {
         res.send({
           status: false,
@@ -186,7 +206,7 @@ app.delete('/api/folders/:name', (req, res, next) => {
       }
     });
   } else {
-    fs.unlink(`${__dirname}/${parentFolder}/${itemName}.${itemExt}`, (err) => {
+    rimraf(`${itemPath}`, (err) => {
       if (err) {
         res.send({
           status: false,

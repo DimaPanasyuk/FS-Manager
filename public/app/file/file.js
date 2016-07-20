@@ -25,16 +25,15 @@
       
       fileService
       .updateFile({
-        folderName: params.folderName,
-        fileName: params.fileName,
-        extension: params.ext,
+        fileName: params.name,
+        path: decodeURIComponent(params.path),
         newName: $scope.file.name,
         newContent: $scope.file.content
       })
       .then(function(data) {
         if (data.status) {
           toastr.success('<b>File updated successfully!</b>');
-          $location.path('/folders');
+          history.back();
         } else {
           toastr.error('<b>File update error!</b>');
         }

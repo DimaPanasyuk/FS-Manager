@@ -1,3 +1,5 @@
 (function() {
-  angular.module('main.foldersList', []);
+  angular.module('main.foldersList', [
+    'main.shared'
+  ]);
 })();

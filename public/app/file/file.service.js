@@ -5,7 +5,7 @@
 
   fileService.$inject = ['$resource'];
   function fileService($resource) {
-    const fileResource = $resource('/api/folders/:folderName/files/:fileName/:extension', {
+    const fileResource = $resource('/api/files/:name', {
       folderName: '@folderName',
       fileName: '@fileName'
     }, {
@@ -20,24 +20,19 @@
 
     function getFileInfo(options) {
       return fileResource
-              .get({
-                folderName: options.folderName,
-                fileName: options.fileName,
-                extension: options.extension
-              })
+              .get(options)
               .$promise;
     }
 
     function updateFile(options) {
+      console.log(options);
       return fileResource
               .updateFile({
-                folderName: options.folderName,
-                fileName: options.fileName,
-                extension: options.extension
+                name: options.fileName
               },{
-                oldName: options.fileName,
                 newName: options.newName,
-                newContent: options.newContent
+                data: options.newContent,
+                path: options.path
               })
               .$promise;
     }

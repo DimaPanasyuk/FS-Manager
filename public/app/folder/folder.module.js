@@ -1,4 +1,6 @@
 (function() {
   angular
-  .module('main.folder', []);
+  .module('main.folder', [
+    'main.shared'
+  ]);
 })();

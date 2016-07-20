@@ -3,6 +3,7 @@
   .module('main', [
     'ngRoute', 
     'ngResource',
+    'main.shared',
     'main.foldersList',
     'main.folder',
     'main.file'

@@ -6,15 +6,14 @@
   fileConfig.$inject = ['$routeProvider'];
   function fileConfig($routeProvider) {
     $routeProvider
-    .when('/folders/:folderName/files/:fileName/:ext', {
+    .when('/files/:name/path/:path', {
       templateUrl: 'app/file/file.html',
       controller: 'File',
       resolve: {
         filePromise: ['fileService', '$route', function(fileService, $route) {
           return fileService.getFileInfo({
-            folderName: $route.current.params.folderName,
-            fileName: $route.current.params.fileName,
-            extension: $route.current.params.ext
+            name: $route.current.params.name,
+            path: decodeURIComponent($route.current.params.path)
           });
         }]
       }
