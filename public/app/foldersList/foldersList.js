@@ -46,7 +46,7 @@
         }
       } else {
         console.log(data.name);
-        $location.path('folders/app/files/'+ data.name.split('.')[0] + '/' + data.name.split('.')[1] + '');
+        $location.path('/files/'+ data.name.split('.')[0] + '/path/' + encodeURIComponent(data.path));
       }
     }
 
