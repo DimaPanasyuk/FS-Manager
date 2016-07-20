@@ -80,6 +80,19 @@ app.put('/api/files/:name', (req, res, next) => {
         });
       }
     });
+  } else {
+    fs.writeFile(`${path}`, data, (err, data) => {
+      if (err) console.log(err);
+      if (!err) {
+        res.send({
+          status: true
+        });
+      } else {
+        res.send({
+          status: false
+        });
+      }
+    });
   }
 });
 
@@ -187,6 +200,10 @@ app.get('/api/folders/:name', (req, res, next) => {
     }
   });
 });
+
+// app.put('/api/folders/:name', (req, res, next) => {
+
+// });
 
 app.delete('/api/folders/:name', (req, res, next) => {
   const itemExt = (req.query.ext) ? req.query.ext : null;

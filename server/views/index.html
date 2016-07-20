@@ -38,14 +38,30 @@
         </div>
       </div>
     </header>
-    <section ng-if="folderTitle">
+    <section ng-if="openedItems.length">
       <div class="container">
         <div class="row">
-          <div class="panel panel-primary">
-            <div class="panel-body">
-              <div class="col-sm-12">
-                <div class="label label-primary">
-                  {{folderTitle}}
+          <div class="col-sm-12">
+            <div class="panel panel-primary">
+              <div class="panel-body">
+                <div class="btn-group">
+                  <div class="btn-group"
+                      ng-repeat="item in openedItems">
+                    <button class="btn btn-default">
+                      <strong>
+                        <span class="glyphicon glyphicon-folder-close text-primary"
+                              ng-if="item.type === 'folder'">
+                        </span>
+                        <span class="glyphicon glyphicon-file text-danger"
+                              ng-if="item.type === 'file'">
+                        </span>
+                        <span class="glyphicon glyphicon-home text-warning"
+                              ng-if="item.type === 'home'">
+                        </span>
+                        {{item.name}}
+                      </strong>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
